@@ -503,7 +503,7 @@ light:
           twinkle_probability: 50%
       - addressable_rainbow:
           name: "Rainbow"
-          width: ${led_count}      
+          width: ${led_count}
       - pulse:
           name: "Notification Pulse"
           update_interval: 500ms
