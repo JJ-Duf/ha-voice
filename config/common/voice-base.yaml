@@ -38,7 +38,7 @@ dashboard_import:
 esphome:
   project: 
     name: pimmeke1989.LumiTone S1
-    version: 2026.01.02_RC3
+    version: 2026.01.02_RC4_JD
   name: lumitone-s1
   friendly_name: LumiTone S1
   name_add_mac_suffix: true
@@ -501,14 +501,17 @@ light:
       - addressable_twinkle:
           name: "Twinkle"
           twinkle_probability: 50%
+
       - addressable_rainbow:
           name: "Rainbow"
           width: ${led_count}
+
       - pulse:
           name: "Notification Pulse"
           update_interval: 500ms
           min_brightness: 0%
           max_brightness: 100%  
+
       - addressable_lambda:
           name: "Error"
           update_interval: 10ms
@@ -532,6 +535,7 @@ light:
             if (brightness_step == 0 || brightness_step == brightness_step_number) {
               brightness_decreasing = !brightness_decreasing;
             }
+
       - addressable_lambda:
           name: "Timer Ring"
           update_interval: 10ms
@@ -557,6 +561,7 @@ light:
             if (brightness_step == 0 || brightness_step == brightness_step_number) {
               brightness_decreasing = !brightness_decreasing;
             }
+
       - addressable_lambda:
           name: "Timer Tick"
           update_interval: 100ms
@@ -575,6 +580,7 @@ light:
               }
             }
             id(global_led_animation_index) = (it.size() + id(global_led_animation_index) - 1) % 20;
+      
       - addressable_lambda:
           name: "Factory Reset Coming Up"
           update_interval: 1s
@@ -628,8 +634,6 @@ light:
             offset++; 
             if (offset >= 4) offset = 0;
 
-
-
   # User facing LED ring. Remapping of the internal LEDs. 
   # Exposed to be used by the user.
 
@@ -671,6 +675,10 @@ light:
           lambda: return;
       - lambda:
           name: "Christmas"
+          update_interval: 0s
+          lambda: return;
+      - lambda:
+          name: "Thinkingd"
           update_interval: 0s
           lambda: return;
 
@@ -1502,6 +1510,7 @@ select:
       - "Twinkle"
       - "Slow Pulse"
       - "None"
+      - "Thinking"
     on_value:
       # Als je in HA een ander effect kiest terwijl de lamp al AAN staat,
       # pas het dan direct toe.
