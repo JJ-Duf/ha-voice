@@ -634,6 +634,13 @@ light:
             offset++; 
             if (offset >= 4) offset = 0;
 
+      - addressable_fireworks:
+          name: Fireworks
+          update_interval: 32ms
+          spark_probability: 10%
+          use_random_color: false
+          fade_out_rate: 120
+
   # User facing LED ring. Remapping of the internal LEDs. 
   # Exposed to be used by the user.
 
@@ -679,6 +686,10 @@ light:
           lambda: return;
       - lambda:
           name: "Thinking"
+          update_interval: 0s
+          lambda: return;
+      - lambda:
+          name: "Fireworks"
           update_interval: 0s
           lambda: return;
 
@@ -1511,6 +1522,7 @@ select:
       - "Slow Pulse"
       - "None"
       - "Thinking"
+      - "Fireworks"
     on_value:
       # Als je in HA een ander effect kiest terwijl de lamp al AAN staat,
       # pas het dan direct toe.
