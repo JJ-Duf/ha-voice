@@ -678,7 +678,7 @@ light:
           update_interval: 0s
           lambda: return;
       - lambda:
-          name: "Thinkingd"
+          name: "Thinking"
           update_interval: 0s
           lambda: return;
 
