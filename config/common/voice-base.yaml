@@ -641,6 +641,30 @@ light:
           use_random_color: false
           fade_out_rate: 120
 
+      - addressable_lambda:
+        name: "Twinklecat"
+        update_interval: 16ms
+        lambda: |-
+          static bool init = false;
+          static uint16_t n = 0;
+
+          static uint8_t b[300];      // brightness 0..255
+          static int8_t v[300];       // velocity per frame (-..+)
+          static uint8_t hue[300];    // hue 0..255
+          static uint16_t t = 0;      // time
+
+          n = it.size();
+          if (n > 300) n = 300;
+
+          if (!init) {
+            init = true;
+            for (uint16_t i = 0; i < n; i++) {
+              b[i] = 0;
+              v[i] = 0;
+              hue[i] = (uint8_t) (random_uint32() & 0xFF);
+            }
+          }
+
   # User facing LED ring. Remapping of the internal LEDs. 
   # Exposed to be used by the user.
 
@@ -692,6 +716,11 @@ light:
           name: "Fireworks"
           update_interval: 0s
           lambda: return;
+      - lambda:
+          name: "Twinklecat"
+          update_interval: 0s
+          lambda: return;
+
 
   - platform: esp32_rmt_led_strip
     id: led_respeaker_onboard
@@ -1523,6 +1552,7 @@ select:
       - "None"
       - "Thinking"
       - "Fireworks"
+      - "Twinklecat"
     on_value:
       # Als je in HA een ander effect kiest terwijl de lamp al AAN staat,
       # pas het dan direct toe.
