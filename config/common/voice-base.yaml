@@ -678,7 +678,86 @@ light:
               it[x] = current_color;
               x += 1;
             }
- 
+
+      - addressable_lambda:
+          name: "Heartbeat"
+          update_interval: 16ms
+          lambda: |-
+            // ====== TWEAKS ======
+            const int breathe_ms = 4500;    // adem-cyclus (lager = sneller)
+            const int heartbeat_ms = 1100;  // heartbeat cyclus
+
+            // Achtergrondkleur (blauw) en max brightness
+            const uint8_t br_bg_max = 70;   // 0..255
+            const uint8_t bg_r = 0, bg_g = 30, bg_b = 255;
+
+            // Heartbeat kleur (rood) en peaks
+            const uint8_t hb_peak1 = 255;
+            const uint8_t hb_peak2 = 190;
+            const uint8_t hb_r = 255, hb_g = 0, hb_b = 0;
+            // =====================
+
+            // helper: clamp
+            auto clamp01 = [](float x) -> float { return x < 0 ? 0 : (x > 1 ? 1 : x); };
+
+            // helper: smoothstep (zacht in/uit)
+            auto smoothstep = [](float x) -> float {
+              x = (x < 0) ? 0 : (x > 1 ? 1 : x);
+              return x * x * (3.0f - 2.0f * x);
+            };
+
+            // helper: pulse shape 0..1
+            auto pulse = [&](int t, int start, int rise, int hold, int fall) -> float {
+              if (t < start) return 0.0f;
+              t -= start;
+              if (t < rise) return smoothstep((float)t / (float)rise);
+              t -= rise;
+              if (t < hold) return 1.0f;
+              t -= hold;
+              if (t < fall) return 1.0f - smoothstep((float)t / (float)fall);
+              return 0.0f;
+            };
+
+            // ====== 1) Ademhaling (sinus 0..1, daarna smooth) ======
+            float phase = (float)(millis() % breathe_ms) / (float)breathe_ms; // 0..1
+            // sinus 0..1
+            float s = 0.5f + 0.5f * sinf(2.0f * 3.1415926f * phase);
+            // maak 'm wat "adem"-achtig (langzamer rond pieken)
+            float breathe = smoothstep(s);
+            uint8_t bg_bri = (uint8_t)(br_bg_max * breathe);
+
+            // ====== 2) Heartbeat (dubbele beat) ======
+            int t = (int)(millis() % heartbeat_ms);
+            float p1 = pulse(t,  80,  70,  20, 160);  // lub
+            float p2 = pulse(t, 320,  55,  15, 120);  // dub
+
+            // Neem de hoogste pulse als "momentane" beat
+            bool first = (p1 >= p2);
+            float hb = first ? p1 : p2;               // 0..1
+            uint8_t hb_peak = first ? hb_peak1 : hb_peak2;
+            uint8_t hb_bri = (uint8_t)(hb_peak * hb);
+
+            // ====== 3) Mix: achtergrond + heartbeat erbovenop ======
+            // hb_mix bepaalt hoeveel heartbeat de achtergrond verdringt
+            float hb_mix = clamp01(hb); // 0..1
+
+            // Achtergrond RGB op basis van bg_bri
+            uint8_t r_bg = (uint8_t)((bg_r * bg_bri) / 255);
+            uint8_t g_bg = (uint8_t)((bg_g * bg_bri) / 255);
+            uint8_t b_bg = (uint8_t)((bg_b * bg_bri) / 255);
+
+            // Heartbeat RGB op basis van hb_bri
+            uint8_t r_hb = (uint8_t)((hb_r * hb_bri) / 255);
+            uint8_t g_hb = (uint8_t)((hb_g * hb_bri) / 255);
+            uint8_t b_hb = (uint8_t)((hb_b * hb_bri) / 255);
+
+            // Lineaire crossfade (hb over bg)
+            uint8_t r = (uint8_t)(r_bg * (1.0f - hb_mix) + r_hb * hb_mix);
+            uint8_t g = (uint8_t)(g_bg * (1.0f - hb_mix) + g_hb * hb_mix);
+            uint8_t b = (uint8_t)(b_bg * (1.0f - hb_mix) + b_hb * hb_mix);
+
+            it.all() = Color(r, g, b);
+
   # User facing LED ring. Remapping of the internal LEDs. 
   # Exposed to be used by the user.
 
@@ -736,6 +815,10 @@ light:
           lambda: return;
       - lambda:
           name: "Wipe In"
+          update_interval: 0s
+          lambda: return;
+      - lambda:
+          name: "Heartbeat"
           update_interval: 0s
           lambda: return;
 
@@ -1572,6 +1655,7 @@ select:
       - "Fireworks"
       - "Twinklecat"
       - "Wipe In"
+      - "Heartbeat"
     on_value:
       # Als je in HA een ander effect kiest terwijl de lamp al AAN staat,
       # pas het dan direct toe.
