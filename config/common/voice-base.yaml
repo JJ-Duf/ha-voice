@@ -1122,11 +1122,13 @@ script:
       - light.turn_on:
           id: voice_assistant_leds
           # Deze regels zijn noodzakelijk om te synchroniseren met jouw instelling
-          brightness: !lambda return max( id(led_ring).current_values.get_brightness() , 0.5f );
-          red: !lambda return id(led_ring).current_values.get_red();
-          green: !lambda return id(led_ring).current_values.get_green();
-          blue: !lambda return id(led_ring).current_values.get_blue();
-          effect: "Scan Slow"
+          #brightness: !lambda return max( id(led_ring).current_values.get_brightness() , 0.5f );
+          #red: !lambda return id(led_ring).current_values.get_red();
+          #green: !lambda return id(led_ring).current_values.get_green();
+          #blue: !lambda return id(led_ring).current_values.get_blue();
+          #effect: "Scan Slow"
+          effect: "Listening"
+
 
   # NEW - Script for Listening to command
   # NEW - Uses Scan Fast
