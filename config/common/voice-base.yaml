@@ -28,8 +28,8 @@ substitutions:
   error_cloud_expired_sound_file: https://github.com/esphome/home-assistant-voice-pe/raw/dev/sounds/error_cloud_expired.mp3
 
   # set led count
-  led_count: "35"
-  led_last: "34" 
+  led_count: "21"
+  led_last: "20" 
 
 dashboard_import:
   package_import_url: github://Pimmeke1989/Voice-Satellite/config/common/voice-base.yaml@main
