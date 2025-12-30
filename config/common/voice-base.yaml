@@ -1134,11 +1134,12 @@ script:
     then:
       - light.turn_on:
           id: voice_assistant_leds
-          brightness: !lambda return max( id(led_ring).current_values.get_brightness() , 0.5f );
-          red: !lambda return id(led_ring).current_values.get_red();
-          green: !lambda return id(led_ring).current_values.get_green();
-          blue: !lambda return id(led_ring).current_values.get_blue();
-          effect: "Scan Fast"
+          #brightness: !lambda return max( id(led_ring).current_values.get_brightness() , 0.5f );
+          #red: !lambda return id(led_ring).current_values.get_red();
+          #green: !lambda return id(led_ring).current_values.get_green();
+          #blue: !lambda return id(led_ring).current_values.get_blue();
+          #effect: "Scan Fast" standard setting "Scan Fast"
+          effect: "Listening"
 
   # Script executed when the voice assistant is thinking to a command
   # The spin stops and the 2 LEDs that are currently on and blinking indicating the commend is being processed.
@@ -1147,7 +1148,7 @@ script:
       - light.turn_on:
           brightness: !lambda return max( id(led_ring).current_values.get_brightness() , 0.2f );
           id: voice_assistant_leds
-          effect: "Thinking"
+          effect: "Thinking" #
 
   # NEW - Script for Replying to command
   # NEW - Uses Scan Fast
