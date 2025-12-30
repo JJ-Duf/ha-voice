@@ -758,6 +758,72 @@ light:
 
             it.all() = Color(r, g, b);
 
+      - addressable_lambda:
+          name: "Listening"
+          update_interval: 30ms
+          lambda: |-
+            // Soft breathing blue + rotating highlight (mic-listening vibe)
+
+            static uint8_t breathe_step = 0;
+            static bool breathe_down = true;
+            static uint16_t pos16 = 0;
+
+            const uint8_t breathe_steps = 24;   // hoger = trager/soepeler
+            const uint8_t base_min = 20;        // minimale achtergrond brightness
+            const uint8_t base_max = 90;        // maximale achtergrond brightness
+
+            const uint8_t highlight_width = 3;  // aantal LEDs in het highlight segment
+            const uint8_t highlight_boost = 165; // extra brightness bovenop basis (0..255)
+
+            // Blauw (iets "rijker" dan puur 0,0,255)
+            const Color blue(0, 40, 255);
+
+            if (initial_run) {
+              breathe_step = 0;
+              breathe_down = true;
+              pos16 = 0;
+            }
+
+            // ===== 1) Breathe brightness (lineair, simpel maar effectief) =====
+            uint8_t base_bri = base_min + (uint8_t)((base_max - base_min) * (float)breathe_step / (float)breathe_steps);
+
+            // ===== 2) Moving highlight position =====
+            // pos16 loopt 0..(it.size()*256-1) zodat het soepel beweegt
+            pos16 += 120; // snelheid (hoger = sneller)
+            uint16_t max16 = (uint16_t)it.size() * 256;
+            if (max16 > 0) pos16 %= max16;
+            uint8_t pos = (uint8_t)(pos16 / 256);
+
+            // ===== 3) Render =====
+            for (uint8_t i = 0; i < it.size(); i++) {
+              // basis
+              uint16_t bri = base_bri;
+
+              // highlight met zachte falloff rondom pos
+              // afstand op een ring (wrap-around)
+              uint8_t dist = (i > pos) ? (i - pos) : (pos - i);
+              uint8_t wrap_dist = it.size() - dist;
+              dist = (wrap_dist < dist) ? wrap_dist : dist;
+
+              if (dist < highlight_width) {
+                // 1.0, 0.66, 0.33... (lineaire falloff)
+                uint8_t factor = (uint8_t)((highlight_width - dist) * 255 / highlight_width);
+                bri = bri + (uint16_t)((highlight_boost * factor) / 255);
+              }
+
+              if (bri > 255) bri = 255;
+              it[i] = blue * (uint8_t)bri;
+            }
+
+            // ===== 4) Update breathe step =====
+            if (breathe_down) {
+              if (breathe_step < breathe_steps) breathe_step++;
+              else breathe_down = false;
+            } else {
+              if (breathe_step > 0) breathe_step--;
+              else breathe_down = true;
+            }
+
   # User facing LED ring. Remapping of the internal LEDs. 
   # Exposed to be used by the user.
 
@@ -819,6 +885,10 @@ light:
           lambda: return;
       - lambda:
           name: "Heartbeat"
+          update_interval: 0s
+          lambda: return;
+      - lambda:
+          name: "Listening"
           update_interval: 0s
           lambda: return;
 
@@ -1656,6 +1726,7 @@ select:
       - "Twinklecat"
       - "Wipe In"
       - "Heartbeat"
+      - "Listening"
     on_value:
       # Als je in HA een ander effect kiest terwijl de lamp al AAN staat,
       # pas het dan direct toe.
